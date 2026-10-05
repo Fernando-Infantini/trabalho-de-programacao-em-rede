@@ -3,7 +3,7 @@
 ## Integrantes
 
 - Fernando Infantini
-- Ezequiel Alvez
+- Ezequiel Alves
 - Ronaldy Gelos
 
 ## Descrição
