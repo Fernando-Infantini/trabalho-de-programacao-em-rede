@@ -1,129 +1,154 @@
-# MVP 1 - Servidor HTTP Básico
+# Servidor HTTP com Qualidade de Serviço (QoS)
 
-## Integrantes
+## Sobre o Projeto
 
-- Fernando Infantini
-- Ezequiel Alves
-- Ronaldy Gelos
+Este repositório contém o desenvolvimento do trabalho prático da disciplina de **Fundamentos e Avaliação de Redes de Computadores – 2026/2**.
 
-## Descrição
+O trabalho tem como objetivo desenvolver e avaliar um **servidor HTTP com mecanismos de Qualidade de Serviço (QoS)**, permitindo aplicar na prática conceitos relacionados à programação em redes, protocolos de comunicação, concorrência, desempenho e avaliação de redes de computadores.
 
-Esta pasta contém o código-fonte referente ao MVP 1 do trabalho da disciplina de Fundamentos e Avaliação de Redes de Computadores.
+O servidor é desenvolvido em **linguagem C**, para ambiente **Linux**, utilizando **Sockets TCP** para comunicação e **Pthreads** para permitir o atendimento concorrente de diferentes clientes.
 
-O projeto consiste na implementação de um servidor HTTP/1.1 concorrente desenvolvido em linguagem C, utilizando Sockets POSIX para comunicação TCP e Pthreads para o atendimento concorrente de clientes.
+O desenvolvimento é realizado de maneira incremental, dividido em diferentes versões (MVPs), nas quais novas funcionalidades são incorporadas ao servidor ao longo do projeto.
 
-O servidor opera localmente no endereço:
+## Objetivo Geral
 
-```text
-127.0.0.1:9998
-```
+O objetivo geral do trabalho é compreender, por meio de atividades práticas de programação e avaliação, conceitos e elementos presentes em redes de computadores modernas.
 
-Nesta versão foram implementados o recebimento e a interpretação de requisições HTTP, o envio de arquivos e respostas ao cliente e o tratamento dos métodos HTTP previstos no projeto.
+Para isso, o projeto envolve tanto a implementação de um servidor HTTP quanto a realização de experimentos para observar e avaliar seu funcionamento e desempenho em diferentes situações.
 
-Os principais arquivos do projeto são:
+## Objetivos Específicos
 
-- `main.c`: implementação do servidor, sockets, conexões e processamento das requisições;
-- `message.c` e `message.h`: estruturas e funções utilizadas para representar mensagens HTTP;
-- `parser.c` e `parser.h`: interpretação das requisições HTTP recebidas;
-- `Makefile`: automatiza o processo de compilação do servidor.
+Entre os principais objetivos do trabalho estão:
 
-## Compilação
+- compreender o funcionamento da comunicação cliente-servidor;
+- aplicar programação em rede utilizando sockets TCP;
+- compreender e implementar aspectos do protocolo HTTP/1.1;
+- permitir o atendimento concorrente de múltiplos clientes;
+- trabalhar com conexões HTTP persistentes;
+- estudar os efeitos de diferentes condições de rede sobre o desempenho das aplicações;
+- analisar características como atraso, largura de banda e vazão;
+- implementar mecanismos de controle de taxa de transmissão;
+- aplicar conceitos de Qualidade de Serviço (QoS);
+- realizar controle de recursos de acordo com a origem das conexões;
+- realizar medições e avaliações do comportamento do servidor;
+- utilizar ferramentas de análise de tráfego e desempenho de redes.
 
-O projeto deve ser compilado em ambiente Linux ou através do WSL (Windows Subsystem for Linux).
+## Servidor HTTP
 
-É necessário possuir o GCC, Make e suporte à biblioteca Pthreads instalados.
+O sistema desenvolvido consiste em um servidor capaz de receber conexões de clientes através do protocolo TCP e processar requisições HTTP.
 
-Para compilar o servidor, execute dentro da pasta do projeto:
-
-```bash
-make
-```
-
-Após a compilação será criado o executável:
+De forma geral, seu funcionamento pode ser representado da seguinte maneira:
 
 ```text
-servidor
+Cliente
+   |
+   | Conexão TCP
+   v
+Servidor HTTP
+   |
+   | Recebe a requisição
+   v
+Interpretação da mensagem HTTP
+   |
+   v
+Processamento da requisição
+   |
+   v
+Controle e gerenciamento dos recursos
+   |
+   v
+Construção da resposta HTTP
+   |
+   v
+Resposta enviada ao cliente
 ```
 
-## Execução
+O uso de **Pthreads** permite que diferentes conexões sejam tratadas de maneira concorrente, possibilitando que o servidor atenda múltiplos clientes.
 
-Para iniciar o servidor, execute:
+## Qualidade de Serviço (QoS)
 
-```bash
-./servidor
-```
+Ao longo do desenvolvimento são incorporados mecanismos relacionados à Qualidade de Serviço.
 
-O servidor será iniciado no endereço:
+O servidor deverá ser capaz de considerar características da conexão e do cliente para controlar a utilização dos recursos disponíveis.
+
+Entre os aspectos trabalhados estão:
+
+- controle da taxa de envio de dados;
+- definição de limites de transmissão de acordo com o endereço IP do cliente;
+- compartilhamento da taxa disponível entre conexões de uma mesma origem;
+- estimativa do atraso de comunicação;
+- estimativa da largura de banda;
+- acompanhamento dos clientes atendidos;
+- controle da vazão total disponibilizada pelo servidor;
+- mecanismos de controle de admissão.
+
+Esses recursos permitem observar como decisões tomadas pelo servidor podem influenciar o desempenho percebido pelas diferentes aplicações e clientes.
+
+## Avaliação de Desempenho
+
+Além da implementação, o trabalho também envolve a avaliação experimental do servidor.
+
+São realizados testes utilizando múltiplos clientes e páginas contendo diferentes objetos, permitindo observar o comportamento do servidor em situações de maior utilização da rede.
+
+Entre as ferramentas que podem ser utilizadas durante os experimentos estão:
+
+- `curl`;
+- `wget`;
+- Wireshark;
+- TCPdump;
+- IPTraf.
+
+Essas ferramentas permitem gerar requisições, capturar pacotes e observar informações relacionadas ao funcionamento e ao desempenho da comunicação.
+
+Sempre que possível, também podem ser analisados diferentes meios de acesso à rede, como **Ethernet e Wi-Fi**, permitindo observar como características da tecnologia de transmissão podem afetar o comportamento das aplicações.
+
+## Desenvolvimento Incremental
+
+O projeto é desenvolvido em **três versões (MVPs)**.
+
+Cada versão representa uma etapa da evolução do servidor, permitindo que as funcionalidades sejam implementadas e avaliadas progressivamente.
+
+O repositório é organizado de forma que o código-fonte correspondente a cada versão seja mantido separadamente.
+
+Uma estrutura possível é:
 
 ```text
-http://127.0.0.1:9998
+servidor-http-qos/
+│
+├── README.md
+│
+├── MVP1/
+│   ├── código-fonte
+│   └── README.md
+│
+├── MVP2/
+│   ├── código-fonte
+│   └── README.md
+│
+└── MVP3/
+    ├── código-fonte
+    └── README.md
 ```
 
-Para interromper sua execução, utilize:
+Cada pasta possui seu próprio `README.md`, contendo informações específicas sobre compilação, execução e funcionalidades daquela versão.
 
-```text
-Ctrl + C
-```
+## Tecnologias e Ferramentas
 
-Para remover os arquivos gerados durante a compilação:
+O projeto utiliza principalmente:
 
-```bash
-make clear
-```
+- **C** para implementação do servidor;
+- **Sockets POSIX** para programação em rede;
+- **TCP/IP** para comunicação;
+- **HTTP/1.1** como protocolo de aplicação;
+- **Pthreads** para concorrência;
+- **GCC** para compilação;
+- **Make** para automatização da compilação;
+- **Linux / WSL** como ambiente de desenvolvimento e execução;
+- **Git e GitHub** para controle de versão;
+- ferramentas de análise de tráfego e desempenho de redes.
 
-## Testes
+## Resultado Esperado
 
-Os testes podem ser realizados utilizando o comando `curl` em outro terminal.
+Ao final do trabalho, espera-se obter um servidor HTTP capaz de atender múltiplos clientes, controlar os recursos de rede disponíveis e aplicar mecanismos de Qualidade de Serviço.
 
-Exemplo de requisição GET:
-
-```bash
-curl -i http://127.0.0.1:9998/main.c
-```
-
-Exemplo de requisição OPTIONS:
-
-```bash
-curl -i -X OPTIONS http://127.0.0.1:9998/
-```
-
-Exemplo de requisição PUT:
-
-```bash
-curl -i -X PUT http://127.0.0.1:9998/teste.txt -d "Conteudo enviado pelo PUT"
-```
-
-Também é possível realizar testes através de um navegador acessando, por exemplo:
-
-```text
-http://127.0.0.1:9998/main.c
-```
-
-## Funcionalidades desta versão
-
-Nesta versão do servidor foram desenvolvidas funcionalidades relacionadas a:
-
-- criação e configuração de sockets TCP;
-- uso de `bind()`, `listen()` e `accept()`;
-- atendimento concorrente de clientes utilizando Pthreads;
-- interpretação de mensagens HTTP;
-- métodos `GET`, `PUT`, `HEAD`, `OPTIONS` e `TRACE`;
-- envio de arquivos ao cliente;
-- tratamento de recursos inexistentes com resposta `404 Not Found`;
-- gerenciamento e liberação da memória utilizada pelas mensagens HTTP.
-
-## Observações
-
-O servidor foi desenvolvido para execução em ambiente Linux. Durante os testes também foi utilizado o WSL no Windows para compilação e execução.
-
-O projeto utiliza a biblioteca Pthreads para permitir que diferentes clientes sejam atendidos de forma concorrente.
-
-Os testes desta versão podem ser realizados tanto pelo terminal, através do `curl`, quanto por navegadores web.
-
-## Autoria e uso de ferramentas externas
-
-**Este projeto foi desenvolvido integralmente pela equipe, sem ajuda não autorizada de alunos não membros do projeto no processo de codificação.**
-
-Não foram utilizados trechos de código disponíveis na Internet nem códigos produzidos com apoio de ferramentas de Inteligência Artificial durante o desenvolvimento do código-fonte desta versão.
-
-Ferramentas de Inteligência Artificial foram utilizadas posteriormente apenas como auxílio na organização e revisão da documentação do projeto, não na implementação do código-fonte.
+Além da implementação do software, o trabalho busca proporcionar uma compreensão prática da relação entre protocolos, programação em rede, tecnologias de transmissão e desempenho das aplicações.
