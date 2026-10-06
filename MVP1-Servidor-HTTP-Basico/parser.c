@@ -6,8 +6,7 @@
 
 int lstrcmp(const char *a, const char *b, size_t size);
 
-// Converte a string bruta da requisição HTTP em uma struct estruturada
-struct message *parse_message(char *stream){
+struct message *parse_message(char *stream, size_t bytes_read){
 	struct message* message = (struct message*)malloc(sizeof(struct message));
 	if(!message) return NULL;
 	message->field_lines = (struct field_line*)calloc(8, sizeof(struct field_line));
@@ -19,9 +18,8 @@ struct message *parse_message(char *stream){
 	size_t m, n=0;
 	int field_status = -1;
 
-	// Isola a primeira linha (Start-Line / Request-Line)
 	for(;stream[n]!='\r' && stream[n]!='\n' && stream[n]!='\0'; n++);
-	
+
 	char *starting_line = (char*)calloc(n+1, sizeof(char));
 	memcpy(starting_line, stream, n*sizeof(char));
 	starting_line[n] = '\0';
@@ -32,7 +30,6 @@ struct message *parse_message(char *stream){
 	message->start_line = parse_starting_line(starting_line);
 	free(starting_line);
 
-	// Processa até 8 cabeçalhos (Field Lines)
 	for(int i=0; i<8; i++){
 		for(m=n; stream[m]!='\r' && stream[m]!='\n' && stream[m]!='\0'; m++);
 		if(stream[m]=='\0') break;
@@ -47,24 +44,23 @@ struct message *parse_message(char *stream){
 
 		field_status = parse_field_line(&message->field_lines[i], field_line);
 		free(field_line);
-		if(field_status == 1) break; // Encontrou a linha em branco que separa headers do body
+		if(field_status == 1) break;
 	}
 
-	// Copia o corpo da requisição (payload), se houver
 	if(stream[n]!='\0'){
-		size_t body_len = strlen(stream + n);
-		message->body = (char*)calloc(body_len + 1, sizeof(char));
-		if(message->body){
-			strcpy(message->body, stream + n);
+		message->body = (char*)calloc(bytes_read-n+1, sizeof(char));
+		if(!message->body){
+			free_message(message);
+			return NULL;
 		}
-	} else {
+		memcpy(message->body, stream+n, bytes_read-n+1);
+		message->body_size = bytes_read-n+1;
+	}else{
 		message->body = NULL;
 	}
 
 	return message;
 }
-
-// Desaloca com segurança todas as alocações dinâmicas da struct message
 
 union starting_line *parse_starting_line(char *stream){
 	union starting_line *line = (union starting_line*)malloc(sizeof(union starting_line));

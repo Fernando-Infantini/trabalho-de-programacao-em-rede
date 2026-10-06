@@ -44,6 +44,7 @@ struct message{
 	union starting_line *start_line;
 	struct field_line *field_lines;
 	char *body;
+	size_t body_size;
 };
 
 void free_message(struct message *message);

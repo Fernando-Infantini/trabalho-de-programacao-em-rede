@@ -2,8 +2,7 @@
 #define PARSER
 #include "message.h"
 
-// Processa o buffer bruto e constrói a estrutura message
-struct message *parse_message(char *stream);
+struct message *parse_message(char *stream, size_t bytes_read);
 
 union starting_line *parse_starting_line(char *stream);
 int parse_request_line(union starting_line *line, char *stream, size_t *n);
