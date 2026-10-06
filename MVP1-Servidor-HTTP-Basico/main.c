@@ -67,10 +67,10 @@ int main (void){
 
 void *handle_answer(void *clientfd_v){
 	int clientfd = (int)(intptr_t)clientfd_v;
-	char buffer[BUFFER_SIZE];
+	char buffer[BUFFER_SIZE+1];
 
-	ssize_t bytes_read = read(clientfd, buffer, BUFFER_SIZE-1);
-	if (bytes_read <= 0){
+	ssize_t bytes_read = read(clientfd, buffer, BUFFER_SIZE);
+	if(bytes_read==-1){
 		close(clientfd);
 		pthread_exit(NULL);
 	}
@@ -85,8 +85,11 @@ void *handle_answer(void *clientfd_v){
 		pthread_exit(NULL);
 	}
 
-	size_t index = message_lookup_field(message, "Content-Length");
-	size_t clen = index!=-1 ? atoi(message->field_lines[index].value) : -1;
+	size_t clen = -1;
+	{
+		size_t index = message_lookup_field(message, "Content-Length");
+		if(index!=-1) clen = atoi(message->field_lines[index].value);
+	}
 
 	char *target_path = message->start_line->request.target;
 	if (target_path && target_path[0] == '/') {
@@ -206,7 +209,9 @@ int write_file(char *path, char *body, size_t size, int clientfd, size_t total_l
 	if(!path || strlen(path) == 0) return 1;
 	FILE* file = fopen(path, "wb");
 	if(!file) return 1;
-	if(body) fwrite(body, sizeof(char), size, file);
+	if(body){
+		fwrite(body, sizeof(char), size, file);
+	}
 	if(total_len!=-1){
 		while(total_len>size){
 			char temp_buffer[BUFFER_SIZE];

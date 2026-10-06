@@ -47,7 +47,7 @@ struct message *parse_message(char *stream, size_t bytes_read){
 		if(field_status == 1) break;
 	}
 
-	if(stream[n]!='\0'){
+	if(stream[m]!='\0'){
 		message->body = (char*)calloc(bytes_read-n+1, sizeof(char));
 		if(!message->body){
 			free_message(message);
@@ -56,7 +56,8 @@ struct message *parse_message(char *stream, size_t bytes_read){
 		memcpy(message->body, stream+n, bytes_read-n+1);
 		message->body_size = bytes_read-n+1;
 	}else{
-		message->body = NULL;
+		message->body=NULL;
+		message->body_size=0;
 	}
 
 	return message;
