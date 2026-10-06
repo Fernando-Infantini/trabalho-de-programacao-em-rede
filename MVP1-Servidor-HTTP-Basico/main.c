@@ -14,10 +14,9 @@
 #define MYPORT 9998
 #define BUFFER_SIZE 4096
 
-// Assinaturas das funções do servidor
 void *handle_answer(void *clientfd_v);
 int read_file(char *path, char **body, size_t *file_size);
-int write_file(char *path, char *body);
+int write_file(char *path, char *body, size_t size);
 int test_file(char *path);
 
 int main (void){
@@ -25,29 +24,24 @@ int main (void){
 	struct sockaddr_in my_addr;
 	int addrlen = sizeof(my_addr);
 
-	// Criação do socket TCP (IPv4, orientada à conexão)
 	doorwayfd = socket(AF_INET, SOCK_STREAM, 0);
 	if(doorwayfd == -1){
 		perror("Erro ao criar socket");
 		return -1;
 	}
 
-	// Permite reutilizar a porta imediatamente após o término do processo (evita erro de 'Address already in use')
 	int opt = 1;
 	setsockopt(doorwayfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-	// Definindo endereço e porta de escuta
 	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(MYPORT); // Conversão para Big Endian (Network Byte Order)
+	my_addr.sin_port = htons(MYPORT);
 	my_addr.sin_addr.s_addr = inet_addr(MYADDR);
 
-	// Associa o socket ao endereço da interface local
 	if(bind(doorwayfd, (struct sockaddr*)&my_addr, sizeof(my_addr)) == -1){
 		perror("Erro no bind");
 		return -1;
 	}
 
-	// Coloca o socket em escuta passiva com fila de conexões pendentes de tamanho 5
 	if(listen(doorwayfd, 5) == -1){
 		perror("Erro no listen");
 		return -1;
@@ -55,15 +49,13 @@ int main (void){
 
 	printf("Servidor rodando em http://%s:%d\n", MYADDR, MYPORT);
 
-	// Loop principal de aceitação de clientes
 	while(1){
 		int clientfd = accept(doorwayfd, (struct sockaddr*)&my_addr, (socklen_t*)&addrlen);
 		if(clientfd == -1) continue;
 
 		pthread_t answer_thread;
-		// Despacha o tratamento do cliente para uma nova thread POSIX (servidor concorrente)
 		if(pthread_create(&answer_thread, NULL, handle_answer, (void*)(intptr_t)clientfd) == 0){
-			pthread_detach(answer_thread); // Desanexa a thread para liberar recursos automaticamente ao finalizar
+			pthread_detach(answer_thread);
 		} else {
 			close(clientfd);
 		}
@@ -73,12 +65,10 @@ int main (void){
 	return 0;
 }
 
-// Handler responsável pelo ciclo de Vida da Requisição/Resposta HTTP
 void *handle_answer(void *clientfd_v){
 	int clientfd = (int)(intptr_t)clientfd_v;
 	char buffer[BUFFER_SIZE];
 
-	// Leitura da requisição do socket
 	ssize_t bytes_read = read(clientfd, buffer, BUFFER_SIZE-1);
 	if (bytes_read <= 0){
 		close(clientfd);
@@ -86,7 +76,6 @@ void *handle_answer(void *clientfd_v){
 	}
 	buffer[bytes_read] = '\0';
 
-	// Executa o parse do protocolo HTTP sobre a string recebida
 	struct message *message = parse_message(buffer);
 	if(!message || !message->start_line){
 		const char *error400 = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n";
@@ -96,13 +85,11 @@ void *handle_answer(void *clientfd_v){
 		pthread_exit(NULL);
 	}
 
-	// Sanitização básica do caminho relativo
 	char *target_path = message->start_line->request.target;
 	if (target_path && target_path[0] == '/') {
 		target_path++;
 	}
 
-	// Trata os métodos HTTP suportados
 	switch(message->start_line->request.method){
 	case GET:{
 			char *body = NULL;
@@ -110,15 +97,12 @@ void *handle_answer(void *clientfd_v){
 
 			switch(read_file(target_path, &body, &body_len)){
 				case 0:{
-					// Monta o cabeçalho separado do corpo para evitar estourar o buffer de resposta
 					char header[256];
 					snprintf(header, sizeof(header), "HTTP/1.1 200 OK\r\nContent-Length: %zu\r\nConnection: close\r\n\r\n", body_len);
-					
-					// Envia primeiro os cabeçalhos e depois o corpo do arquivo
+
 					write(clientfd, header, strlen(header));
 					write(clientfd, body, body_len);
 
-					// Libera o buffer do arquivo alocado na read_file
 					free(body);
 				} break;
 
@@ -180,22 +164,18 @@ void *handle_answer(void *clientfd_v){
 		} break;
 	}
 
-	// Libera a memória heap alocada pela estrutura da mensagem HTTP
 	free_message(message);
 
-	// Encerra o canal de escrita e fecha o socket
 	shutdown(clientfd, SHUT_WR);
 	close(clientfd);
 	pthread_exit(NULL);
 }
 
-// Lê arquivos de qualquer tamanho alocando memória dinamicamente no Heap
 int read_file(char *path, char **body, size_t *file_size){
 	if(!path || strlen(path) == 0) return 1;
 	FILE* file = fopen(path, "rb");
 	if(!file) return 1;
 
-	// Descobre o tamanho total do arquivo
 	fseek(file, 0, SEEK_END);
 	long size = ftell(file);
 	fseek(file, 0, SEEK_SET);
@@ -205,7 +185,6 @@ int read_file(char *path, char **body, size_t *file_size){
 		return 1;
 	}
 
-	// Aloca memória suficiente para o arquivo + terminador nulo
 	*body = (char*)malloc(size + 1);
 	if(!*body) {
 		fclose(file);
@@ -220,19 +199,16 @@ int read_file(char *path, char **body, size_t *file_size){
 	return 0;
 }
 
-// Escreve o conteúdo recebido no arquivo indicado
-int write_file(char *path, char *body){
+int write_file(char *path, char *body, size_t size){
 	if(!path || strlen(path) == 0) return 1;
 	FILE* file = fopen(path, "w");
 	if(!file) return 1;
-	if(body) {
-		fputs(body, file);
-	}
+	if(body)
+		fwrite(body, sizeof(char), size, file);
 	fclose(file);
 	return 0;
 }
 
-// Verifica se o arquivo existe e pode ser lido
 int test_file(char *path){
 	if(!path || strlen(path) == 0) return 1;
 	FILE* file = fopen(path, "r");
