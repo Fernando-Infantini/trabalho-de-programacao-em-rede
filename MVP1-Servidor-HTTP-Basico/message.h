@@ -48,4 +48,5 @@ struct message{
 };
 
 void free_message(struct message *message);
+size_t message_lookup_field(struct message *message, const char *field);
 #endif

@@ -16,7 +16,7 @@
 
 void *handle_answer(void *clientfd_v);
 int read_file(char *path, char **body, size_t *file_size);
-int write_file(char *path, char *body, size_t size);
+int write_file(char *path, char *body, size_t size, int clientfd, size_t total_len);
 int test_file(char *path);
 
 int main (void){
@@ -76,7 +76,7 @@ void *handle_answer(void *clientfd_v){
 	}
 	buffer[bytes_read] = '\0';
 
-	struct message *message = parse_message(buffer);
+	struct message *message = parse_message(buffer, bytes_read);
 	if(!message || !message->start_line){
 		const char *error400 = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n";
 		write(clientfd, error400, strlen(error400));
@@ -84,6 +84,9 @@ void *handle_answer(void *clientfd_v){
 		close(clientfd);
 		pthread_exit(NULL);
 	}
+
+	size_t index = message_lookup_field(message, "Content-Length");
+	size_t clen = index!=-1 ? atoi(message->field_lines[index].value) : -1;
 
 	char *target_path = message->start_line->request.target;
 	if (target_path && target_path[0] == '/') {
@@ -129,7 +132,7 @@ void *handle_answer(void *clientfd_v){
 		} break;
 
 		case PUT:{
-			if(!write_file(target_path, message->body ? message->body : "")){
+			if(!write_file(target_path, message->body ? message->body : "", message->body_size, clientfd, clen)){
 				const char *header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<h1>Successful write</h1>";
 				write(clientfd, header, strlen(header));
 			}else{
@@ -199,12 +202,19 @@ int read_file(char *path, char **body, size_t *file_size){
 	return 0;
 }
 
-int write_file(char *path, char *body, size_t size){
+int write_file(char *path, char *body, size_t size, int clientfd, size_t total_len){
 	if(!path || strlen(path) == 0) return 1;
-	FILE* file = fopen(path, "w");
+	FILE* file = fopen(path, "wb");
 	if(!file) return 1;
-	if(body)
-		fwrite(body, sizeof(char), size, file);
+	if(body) fwrite(body, sizeof(char), size, file);
+	if(total_len!=-1){
+		while(total_len>size){
+			char temp_buffer[BUFFER_SIZE];
+			size_t tmp_size = read(clientfd, temp_buffer, BUFFER_SIZE);
+			fwrite(temp_buffer, sizeof(char), tmp_size, file);
+			size += tmp_size;
+		}
+	}
 	fclose(file);
 	return 0;
 }
