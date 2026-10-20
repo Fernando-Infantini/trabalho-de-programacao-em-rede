@@ -95,7 +95,6 @@ Entre as ferramentas que podem ser utilizadas durante os experimentos estão:
 - `curl`;
 - `wget`;
 - Wireshark;
-- TCPdump;
 - IPTraf.
 
 Essas ferramentas permitem gerar requisições, capturar pacotes e observar informações relacionadas ao funcionamento e ao desempenho da comunicação.
