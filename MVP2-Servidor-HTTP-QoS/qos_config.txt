@@ -1,0 +1,5 @@
+# Formato: IP TAXA_MAXIMA_KBPS
+# Linhas de exemplo. Altere conforme o ambiente de teste.
+127.0.0.1 1000
+# 192.168.0.10 500
+# 192.168.0.20 2000
