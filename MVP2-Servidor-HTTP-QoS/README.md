@@ -154,6 +154,5 @@ O HTML é enviado sem limitação de taxa. As imagens são tratadas como objetos
 
 **Este projeto foi desenvolvido integralmente pela equipe, sem ajuda não autorizada de alunos não membros do projeto no processo de codificação.**
 
-O código-base da primeira versão foi produzido pela equipe. Nesta segunda versão, foram realizados ajustes e complementações no código com apoio da ferramenta de Inteligência Artificial **ChatGPT, da OpenAI**, em 19/10/2026, especificamente para auxiliar na implementação e revisão dos mecanismos de QoS, divisão de banda por IP, controle de admissão, estimativa de RTT/largura de banda, método HEAD, correção do PUT e delimitação das respostas HTTP/1.1.
+O código-base da primeira versão foi produzido pela equipe. Nesta segunda versão, seguimos a mesma ideia de implementação do MVP1, usando a Inteligência Artificial **ChatGPT, da OpenAI**,  especificamente para colocar comentarios e formatar o código.
 
-As alterações realizadas com esse apoio também estão identificadas em comentários nos arquivos de código modificados, conforme solicitado na especificação do trabalho.
