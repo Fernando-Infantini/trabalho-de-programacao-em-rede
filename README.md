@@ -122,12 +122,9 @@ servidor-http-qos/
 │   └── README.md
 │
 ├── MVP2/
-│   ├── código-fonte
-│   └── README.md
-│
-└── MVP3/
     ├── código-fonte
     └── README.md
+
 ```
 
 Cada pasta possui seu próprio `README.md`, contendo informações específicas sobre compilação, execução e funcionalidades daquela versão.
