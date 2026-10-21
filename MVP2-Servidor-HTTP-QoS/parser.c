@@ -47,12 +47,7 @@ struct message *parse_message(char *stream, size_t bytes_read){
 		if(field_status == 1) break;
 	}
 
-	/*
-	 * Ajuste com apoio do ChatGPT (OpenAI), 19/10/2026:
-	 * body_size deve conter somente os bytes realmente recebidos do corpo.
-	 * O byte '\0' colocado pelo servidor para terminar a string nao pertence
-	 * ao corpo HTTP e nao deve ser salvo pelo PUT.
-	 */
+
 	if(n < bytes_read){
 		message->body_size = bytes_read - n;
 		message->body = (char*)calloc(message->body_size + 1, sizeof(char));
